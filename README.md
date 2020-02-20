@@ -261,6 +261,204 @@ than once.
 We'll continue to write C++ source code in this modular fashion. You'll be
 asked to mimic this style in Parts 2 and 3 of this homework.
 
+### Makefiles
+
+Speaking of *separate compilation*, maybe now is the best time to introduce
+a useful tool for performing compilation. I suppose it's possible, at this
+point in the course, that you are getting tired of typing lines like
+
+    g++ -std=c++11 -g -o pgm src1.cc src2.cc
+
+or else tired of pressing the UP ARROW to find that long command that you've
+been tired of typing. You might also wonder: *What if I was part of a much
+larger project and it had **tons** of files that needed to be compiled?*
+Your answer might be *Oh I bet they use a fancy IDE that does everything
+for them.* and that may even be correct,  but that IDE has to be configured
+for the project, and for many programmers this aspect of project construction
+remains a mystery. (*IDE* means Integrated Development Environment, an
+application that has editing, compiling, debugging, testing, building, etc.
+wrapped up into one Swiss-army-knife like tool.)
+
+There is a command-line tool that is used by lots of developers, called
+`make`, and using it lays bare the things that an IDE has to manage, or
+how an IDE gets configured. The tool is used,  typically,  two ways.
+When it's set up right, and you are working on a program, you type
+the command
+
+    make
+
+and the program you're working on gets built. Or, if you are working
+on a larger project and it has several *targets* (i.e.
+several programs or libraries that can be built with the code), you
+might instead type
+
+    make test_llist
+
+or
+
+    make test_queue
+
+and so on, to just build the target executable you want at that moment.
+
+Now, this may seem like some sort of magic, but there is some method
+behind it, namely, `make` relies on a configuration file, called a
+*make file* or *makefile*, that contains a specification of how each
+target gets built. That file normally just sits in the same folder as
+the source (though it doesn't actually have to) and is normally named
+`Makefile` (though it doesn't have to be named that). A makefile is
+just a text file that gives the set of commands that need to be issued
+in order to construct the target programs of a project.
+
+For example, for Homework 03, we could have the following makefile
+
+    test_llist: test_llist.cc llist.hh llist.cc
+            g++ -g -std=c++11 -o test_llist test_llist.cc llist.cc
+
+    test_ordered: test_ordered.cc ordered.hh ordered.cc
+            g++ -g -std=c++11 -o test_llist test_llist.cc llist.cc
+
+    test_queue: test_queue.cc queue.hh queue.cc
+            g++ -g -std=c++11 -o test_queue test_queue.cc queue.cc
+
+If you look at that makefile, you'll see that it describes three
+targets: `test_llist`, `test_ordered`, `test_queue`. These, of course,
+are the three executable programs I've asked you to write for Homework
+03.  They sit at the far left of a line, immediately followed by a
+colon character `test_llist:`. That is how you tell `make` that you're
+describing the rules for constructing that target file. Then, on the
+next line (or even *lines*) you have a *tabbed* line (a line that
+starts with an actual `'\t'` character resulting from pressing the
+`[Tab]` key on the keyboard) with the console command that produces
+that target. There are three target lines, and each have their build
+commands directly underneath them.
+
+Here is a different example of one of these:
+
+    test_ordered: test_ordered.cc ordered.hh ordered.cc
+            g++ -g -std=c++11 -c llist.cc
+            g++ -g -std=c++11 -c test_llist.cc
+            g++ -g -std=c++11 -o test_ordered test_ordered.o ordered.o
+	    rm test_llist.o
+	    rm llist.o
+
+Though we haven't talked about this much in class, it's possible
+to produce intermediate compilation files, called *dot oh* files or
+*object files*, or simply program *objects*.  These are the genuine
+result of honest-to-goodness "separate compilation" (truth be told:
+my section above avoided talking about separate compilation directly).
+You can compile a program's C++ source file into its own object file
+like so
+
+    g++ -c src.cc
+
+and this will produce its object file `src.o`. And then, once you've
+got a bunch of object files, you can *link them together* with the
+command
+
+    g++ -o pgm src1.o src2.o src3.o etc.o
+
+and this will create your executable `./pgm`.  And then, once that
+program executable is built, these object files can be deleted
+(their actual contents live, with all the other object files'
+contents, within the contents of `pgm`). So it's okay to then
+type
+
+    rm etc.o
+
+and remove those files.
+
+This all, then, is the full explanation foro the longer makefile
+entry I showed you just above for the `test_ordered` target:
+when someone types the command `make test_ordered`, then each
+of those command lines gets entered in turn. (It's even a little
+better than that: if an error happens due to some line's
+command failing, the subsequent lines won't get run.)
+
+I haven't quite demystified the makefile entries completely though.
+It's possible to also specify a targets *dependencies*. These are
+the files that are needed to build the target, the files that the
+target *depends on*. If someone were to change `llist.hh`, for
+example,  the `make` system knows that it needs to rebuild
+`test_llist` because of that change.  So the line
+
+    test_llist: test_llist.cc llist.hh llist.cc
+
+tells `make` that `test_llist` relies on those three files for
+it to be built. It also means that, if you change any one of
+those files, that it needs to be rebuilt (and, of course, the
+line below tells it how to build it). It knows this by the
+*time stamp* of each of the files. If `test_llist` is older
+than  `llist.cc`, for example, then typing
+
+    make test_llist
+
+will make `make` re-make that target. If instead the target has
+the latest time stamp of all those files, then typing
+`make test_llist` leads to no action on `make`'s part:
+
+    $ make test_llist
+    make: 'test_llist' is up to date.
+
+This, finally, is enough set-up to describe the structure of many
+typical `Makefile`s. Here is a third way of describing a target,
+as a series of entries:
+
+    test_queue.o: test_queue.cc queue.hh
+            g++ -g -std=c++11 -c test_queue.cc
+	    
+    queue.o: queue.cc queue.hh
+            g++ -g -std=c++11 -c queue.cc
+
+    test_queue: test_queue.o queue.o
+            g++ -g -std=c++11 -o test_queue test_queue.o queue.o
+
+What doies this say? This tells `make` that, if the header file, or the
+specific C++ source file that uses it changes, then its object file
+needs to be rebuilt. And it says that, should any of the object files
+be rebuilt, than the executable that is amde up of them needs to be
+relinked together with them. That way, if change `llist.hh`, both
+`.o` files need to be recompiled. But, if we just change `llist.cc`,
+then only `llist.o` needs to be recompiled. Then, in both scenarios,
+the `test_queue` executable needs to be re-constructed with any
+rebuilt objects.
+
+**Lastly**
+Now, if you look at the `Makefile` I've actually provided, there are
+a few other features (and in later projects I will show you even more).
+It turns out, for example, if you type just `make` then the tool will
+scan `Makefile` from the top and look for the first target entry.
+That is treated as the *default target*.  So people often put a
+first entry like
+
+    all: test_llist test_ordered test_queue
+
+This will ahve no command lines underneath, and doesn't actually
+describe the name of a target file. Nevertheless, if you type
+
+    make all
+
+or just `make` (with `all` being the first/default), then the
+tool will do the work of building those three programs (because
+after all we told `make` that the target `all` depends on them)
+and looks for their target entries, builds each of them
+accordingly.
+
+And then, typically, at the bottom of a makefile people include
+the lines
+
+    clean:
+           rm *.o *~ test_llist test_ordered test_queue
+
+so that they can type `make clean` to clear out all the cruft of
+editing and compiling (the automatically saved `~` files, the object
+files, the compiled executables) to have a fresh compilation space.
+
+There are probably lots of resources and examples for `make` and
+`Makefile` construction available on-line. The description and
+examples above are from my own experience, and also from
+the [tutorial](http://www.cs.colby.edu/maxwell/courses/tutorials/maketutor/)
+by Bruce Maxwell at Colby College.
+
 ---
 
 ### Part 1: complete `llist`

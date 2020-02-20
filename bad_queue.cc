@@ -113,13 +113,8 @@ int main(int argc, char** argv) {
     //
     // head
     } else if (keyword == "head") {
-
-      if (queue::isEmpty(theQueue)) {
-	std::cout << "Your queue is empty and has no head." << std::endl;
-      } else {
-	int head = queue::head(theQueue);
-	std::cout << head << "is at the head of your queue." << std::endl;
-      }
+      int head = theQueue->first->data;
+      std::cout << head << "is at the head of your queue." << std::endl;
 
     } else if (keyword == "help") {
 

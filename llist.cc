@@ -241,10 +241,19 @@ namespace llist {
   // Returns the number of nodes in the given linked `list`.
   //
   int length(llist* list) {
-    // UNIMPLEMENTED
-    // Write for Homework 03, Part 1.
-    return 0; // Returns a bogus value. Fix this!
+    int count = 0;
+    node* current = list->first;
+    if (list->first == nullptr){
+      return 0;
+    }
+    //Transverse nodes of the list, incrementing count for each one.
+    while (current != nullptr){
+      count++;
+      current = current->next;
+    }
+    return count;
   }
+
 
   // llist::remove(list,value):
   //
@@ -252,9 +261,32 @@ namespace llist {
   // `value`. Excises it from the linked list.
   //
   void remove(llist* list, int value) {
-    // UNIMPLEMENTED
-    // Write for Homework 03, Part 1.
-    return;  // Does nothing. Fix this!
+    if (list->first != nullptr){
+      //List is not empty
+
+      if (value == list->first->data){
+        //If value is first in the list, delete it
+        deleteFront(list);
+      }
+    
+      else{
+        //Traverse the list with two consecutive pointers.
+        node* follower = list->first;
+        node* leader = list->first->next;
+        while (leader->next != nullptr){
+          follower = leader;
+          leader = leader->next;
+
+          //When the value is found
+          if (leader->data == value){
+            //leader pointer is unlinked and returned to the heap
+            node* toDelete = follower->next;
+            follower->next = leader->next;
+            delete toDelete;
+          }
+        }
+      }
+  }
   }
 
 } // end namespace llist

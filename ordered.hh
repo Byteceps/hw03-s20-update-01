@@ -54,6 +54,12 @@ namespace ordered {
   // "Returns the value of the entry with key 'k'"
   int get(dict* D, std::string k);
 
+  // "Returns number of entires in a dictionary"
+  int length(dict* D);
+
+  // "Returns true/false depending on if given dict contains given key"
+  bool contains(dict* D);
+
   // "Returns python representation of dict elements 
   // "{key:value, key:value, key:value...}"
   std::string toString(dict* D);

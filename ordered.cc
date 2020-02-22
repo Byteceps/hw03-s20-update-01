@@ -56,7 +56,7 @@ namespace ordered {
   int get(dict* D, std::string k) {
     //Check if dict is empty
     if (D->first == nullptr){
-      return -1; //Returns -1 if first value is nullptr
+      return D->defaultValue; //Returns default value if first value is nullptr
     }
     //Search for k with dict transversal
     entry* current = D->first;
@@ -67,7 +67,7 @@ namespace ordered {
       }
       current = current->next;
     }
-    return -1; //Return -1 if k is not found
+    return D->defaultValue; //Return default value if k is not found
   }
   
   //Update dictionary so that value 'v' is associated with 'k'
@@ -77,10 +77,12 @@ namespace ordered {
       //Search for k with dict transversal
       entry* current = D->first;
 
-      while (current != nullptr){
+      while (current->next != nullptr){
         //If k is found, update the value of that entry with v
-        if(current->key == k){
+        if (k.compare(current->key) == 0){
           current->value = v;
+          break;
+
         }
         current = current->next;
       }
@@ -109,8 +111,8 @@ namespace ordered {
     if (D->first == nullptr) {
       //Return empty list
       return "{}";
-    } else {
-
+    }
+    else {
       std::string s = "{";
       entry* current = D->first;
       // Traverse up to the end, placing commas after each `entry`.
@@ -118,63 +120,19 @@ namespace ordered {
 	      s += current->key + ":" + std::to_string(current->value) + ",";
 	      current = current->next;
       } 
+
       // Add the last `entry` (which could happen to be the `first`).
       s += current->key + ":" + std::to_string(current->value) + "}";
-      
-
       return s;
     }
   }
-
-
-
-
-
-
-
-
-
-  // dict::toString(list):
-  // 
-  // Devises a string for the linked `list`, similar to Python's
-  // reperesentation. An empty list string is "[]", a singleton list
-  // is like "[42]", and a longer list is like "[5, 7, 3]".
-  //
-  std::string toString(dict* list) {
-    if (list->first == nullptr) {
-
-      return "[]";
-
-    } else {
-
-      std::string s = "[";
-      node* current = list->first;
-      // Traverse up to the end, placing commas after each `data`.
-      while (current->next != nullptr) {
-	s += std::to_string(current->data) + ", ";
-	current = current->next;
-      } 
-      // Add the last `data` (which could happen to be the `first`).
-      s += std::to_string(current->data) + "]";
-      return s;
-
-    }
-  }
-
-  // dict::destroy(list):
-  // 
-  // Returns the storage of the nodes and the top-level `dict` struct
-  // back to the heap, calling `delete` on the pointer for each.
-  //
-  // This is a "destructor", using C++'s object-oriented terminology.
-  //
-  void destroy(dict* list) {
+  //void destroy(dict* list) {
     // Delete each node, which performs the `delete` on each.
-    while (!isEmpty(list)) {
-      deleteFront(list);
-    }
+   // while (!isEmpty(list)) {
+     // deleteFront(list);
+   // }
     // `delete` the housing struct.
-    delete list;
-  }
+   // delete list;
+ // }
 
-} // end namespace dict
+} // end namespace ordered

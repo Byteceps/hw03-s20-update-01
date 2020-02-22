@@ -69,22 +69,59 @@ namespace ordered {
     }
     return D->defaultValue; //Return default value if k is not found
   }
+
+  //Returns number of entries in a dictionary
+  int length(dict* D){
+    int count = 0;
+    entry* current = D->first;
+    if (current == nullptr){
+      return 0;
+    }
+    //Transverse entries of the dictionary, incrementing count each time
+    while (current != nullptr){
+      count ++;
+      current = current->next;
+    }
+    return count;
+  }
+
+  //Returns true/flase depending on whether the given dict contains an entry with key 'k'
+  bool contains(dict* D, std::string k){
+    //Search for it with a dict traversal 
+    entry* current = D->first;
+    while (current != nullptr) {
+      //Key found, return true.
+      if (k.compare(current->key)) {
+        return true;
+      }
+      current = current->next;
+    }
+    //Didnt find key, return false
+    return false;
+  }
   
   //Update dictionary so that value 'v' is associated with 'k'
   void set(dict* D, std::string k, int v){
+    int length = ordered::length(D);
     //If dict is not empty
     if (D->first != nullptr){
       //Search for k with dict transversal
       entry* current = D->first;
 
-      while (current->next != nullptr){
-        //If k is found, update the value of that entry with v
-        if (k.compare(current->key) == 0){
-          current->value = v;
-          break;
-
-        }
-        current = current->next;
+      //Check for dict of length 1 with same key as 'k'
+      if (length == 1 && k.compare(current->key) == 0){
+        current->value = v;
+        exit(0);
+      }
+      else {
+        while (current->next != nullptr){
+          //If k is found, update the value of that entry with v
+          if (k.compare(current->key) == 0){
+            current->value = v;
+            exit(0);
+          }
+          current = current->next;
+        }// write a contains function
       }
 
       //If k is not found, add an entry to the end with key 'k' and value 'v'
